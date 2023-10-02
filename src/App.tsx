@@ -1,49 +1,11 @@
-import React, {useEffect, useState} from 'react'
-import {MOCK_FORM_DATA} from "./mock";
-import {FormField} from "./interface";
-import {generateZodSchema, getDefaultValues} from "./service";
-import {z} from "zod";
-import {handleFileChange} from "./service/handleFileChange.ts";
 import DynamicForm from "./components/Form/DynamicForm.tsx";
-import {useForm} from "react-hook-form";
-import {zodResolver} from "@hookform/resolvers/zod";
 import {Box, Input, Typography} from "@mui/material";
+import {useFormHandling, useValidationFormFileChange} from "./hooks";
 
 function App() {
-    const [formData, setFormData] = useState<FormField[]>(MOCK_FORM_DATA)
-    const validationSchema = z.object(generateZodSchema(formData))
-    type ValidationSchema = z.infer<typeof validationSchema>;
+    const { formData, handleValidationFormFileChange } = useValidationFormFileChange();
+    const { form, handleSubmit, submittedValues, formErrors } = useFormHandling(formData);
 
-    const form = useForm({
-        resolver: zodResolver(validationSchema),
-    });
-
-    const [submittedValues, setSubmittedValues] = useState({})
-
-
-    useEffect(() => {
-        const defaultValues = getDefaultValues(formData)
-        form.reset(defaultValues)
-    }, [formData]);
-
-
-    const handleSubmit = (formValues: ValidationSchema) => {
-        setSubmittedValues(formValues);
-    };
-
-    useEffect(() => {
-        console.error('form.formState.errors', form.formState.errors)
-    }, [form.formState.errors]);
-
-    const handleValidationFormChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const validationForm = await handleFileChange(e)
-        const parsedValidationForm = JSON.parse(validationForm)
-        setFormData(parsedValidationForm)
-    }
-
-    const formErrors = Object.entries(form.formState.errors).map(([key, value]) => {
-        return `${key}: ${value?.message}`
-    })
 
     return (
         <Box p={3} display="flex" flexDirection="column" gap={3}
@@ -52,7 +14,7 @@ function App() {
         }}
         >
             <Input
-                onChange={handleValidationFormChange}
+                onChange={handleValidationFormFileChange}
                 type="file"
                 sx={{ marginBottom: 2 }}
             />
