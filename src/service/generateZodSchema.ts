@@ -13,7 +13,10 @@ const generateTextValidation = (field: TextFormField | LongTextFormField): ZodTy
 }
 
 const generateNumberValidation = (field: NumberFormField): ZodType<number> => {
-    let numberValidation: ZodType<number> = z.number();
+    let numberValidation: ZodType<number> = z.any().refine(value => !isNaN(Number(value)), {
+        message: "Expected a numeric string",
+        params: (inputValue: string) => Number(inputValue)
+    });
 
     if (field.min_value !== undefined) {
         const minValue = field.min_value
