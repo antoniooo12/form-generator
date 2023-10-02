@@ -1,7 +1,7 @@
 import {z, ZodSchema, ZodType} from 'zod';
-import {FieldType, FormField} from "../interface";
+import {DropdownFormField, FieldType, FormField, LongTextFormField, NumberFormField, TextFormField} from "../interface";
 
-const generateTextValidation = (field: FormField): ZodType<string> => {
+const generateTextValidation = (field: TextFormField | LongTextFormField): ZodType<string> => {
     let stringValidator: ZodType<string> = z.string();
     if (field.validation) {
         const regex = new RegExp(field.validation);
@@ -12,7 +12,7 @@ const generateTextValidation = (field: FormField): ZodType<string> => {
     return stringValidator
 }
 
-const generateNumberValidation = (field: FormField): ZodType<number> => {
+const generateNumberValidation = (field: NumberFormField): ZodType<number> => {
     let numberValidation: ZodType<number> = z.number();
 
     if (field.min_value !== undefined) {
@@ -31,9 +31,8 @@ const generateNumberValidation = (field: FormField): ZodType<number> => {
     return numberValidation
 }
 
-const generateOptionsValidation = (field: FormField): ZodType<string> => {
+const generateOptionsValidation = (field: DropdownFormField): ZodType<string> => {
     let optionsValidator: ZodType<string> = z.string();
-    optionsValidator = z.string()
 
     if (field.options) {
         const options = field.options.map(option => option.toString())
@@ -42,19 +41,18 @@ const generateOptionsValidation = (field: FormField): ZodType<string> => {
     return optionsValidator
 }
 
-const validationMapping: { [key in FieldType]?: (field: FormField) => ZodSchema<any> } = {
-    [FieldType.text]: generateTextValidation,
-    [FieldType.number]: generateNumberValidation,
-    [FieldType.dropdown]: generateOptionsValidation,
-};
+
 export const generateZodSchema = (formData: FormField[]): { [key: string]: ZodSchema<any> } => {
     let schema: { [key: string]: ZodSchema<any> } = {};
 
     formData.forEach((field, index) => {
         const fieldName = `field_${index}`;
-        const validationFunction = validationMapping[field.type];
-        if (validationFunction) {
-            schema[fieldName] = validationFunction(field);
+        if (field.type === FieldType.text || field.type === FieldType.longtext) {
+            schema[fieldName] = generateTextValidation(field)
+        } else if (field.type === FieldType.number) {
+            schema[fieldName] = generateNumberValidation(field)
+        } else if (field.type === FieldType.dropdown) {
+            schema[fieldName] = generateOptionsValidation(field)
         }
     });
 
