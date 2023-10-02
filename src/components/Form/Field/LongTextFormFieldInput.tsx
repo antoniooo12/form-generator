@@ -1,5 +1,6 @@
 import React from 'react';
 import {Controller, UseFormReturn} from "react-hook-form";
+import {TextareaAutosize} from "@mui/material";
 
 interface LongTextFormFieldInputProps {
     name: string;
@@ -11,7 +12,7 @@ export const LongTextFormFieldInput: React.FC<LongTextFormFieldInputProps> = ({n
         render={({
                      field: {onChange, value},
                  }) => {
-            return <textarea
+            return <TextareaAutosize
                 value={value || ''}
                 name={name}
                 onChange={onChange}

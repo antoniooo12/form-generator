@@ -7,6 +7,7 @@ import {handleFileChange} from "./service/handleFileChange.ts";
 import DynamicForm from "./components/Form/DynamicForm.tsx";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
+import {Box, Input, Typography} from "@mui/material";
 
 function App() {
     const [formData, setFormData] = useState<FormField[]>(MOCK_FORM_DATA)
@@ -27,12 +28,11 @@ function App() {
 
 
     const handleSubmit = (formValues: ValidationSchema) => {
-        console.log('formValues', formValues)
         setSubmittedValues(formValues);
     };
 
     useEffect(() => {
-        console.log('form.formState.errors', form.formState.errors)
+        console.error('form.formState.errors', form.formState.errors)
     }, [form.formState.errors]);
 
     const handleValidationFormChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -41,19 +41,42 @@ function App() {
         setFormData(parsedValidationForm)
     }
 
+    const formErrors = Object.entries(form.formState.errors).map(([key, value]) => {
+        return `${key}: ${value?.message}`
+    })
+
     return (
-        <div className="App">
-            <input type="file" onChange={handleValidationFormChange}/>
+        <Box p={3} display="flex" flexDirection="column" gap={3}
+        sx={{
+            maxWidth: 500,
+        }}
+        >
+            <Input
+                onChange={handleValidationFormChange}
+                type="file"
+                sx={{ marginBottom: 2 }}
+            />
             <DynamicForm
                 form={form}
                 onSubmit={handleSubmit}
                 formData={formData}
             />
-            <div>
-                <h2>Submitted Values:</h2>
-                <pre>{JSON.stringify(submittedValues, null, 2)}</pre>
-            </div>
-        </div>
+            <Box>
+                <Typography>
+                    errors:
+                </Typography>
+                {formErrors.map((error) => (
+                    <Typography key={error}>
+                        {error}
+                    </Typography>
+                ))}
+            </Box>
+
+            <Box>
+                <Typography>Submitted Values:</Typography>
+                <Typography component="pre">{JSON.stringify(submittedValues, null, 2)}</Typography>
+            </Box>
+        </Box>
     )
 }
 
